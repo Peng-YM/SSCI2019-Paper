@@ -25,7 +25,7 @@
 % Add a horizontal line for footnotes(thanks)
 \def\footnoterule{\relax%
   \kern-5pt
-  \hbox to \columnwidth{\hfill\vrule width 0.6\columnwidth height 0.4pt\hfill}
+  \hbox to \columnwidth{\hfill\vrule width 1\columnwidth height 0.4pt\hfill}
   \kern4.6pt}
 \makeatother
 
@@ -35,25 +35,32 @@
 \title{Multi-modal Multi-objective Optimization: Problem Analysis and Case Studies
 }
 \author{\IEEEauthorblockN{Yiming Peng, Hisao Ishibuchi, Ke Shang}
-\thanks{Y. Peng, H. Ishibuchi and K. Shang are with Shenzhen Key Laboratory of Computational Intelligence, University Key Laboratory of Evolving Intelligent Systems of Guangdong Province, Department of Computer Science and Engineering, Southern University of Science and Technology, Shenzhen 518055, China. e-mail: (rt.11510035@mail.sustech.edu.cn, hisao@sustech.edu.cn, kshang@foxmail.com). (Corresponding author: Hisao Ishibuchi)}
+\IEEEauthorblockA{Shenzhen Key Laboratory of Computational Intelligence,}
+\IEEEauthorblockA{University Key Laboratory of Evolving Intelligent Systems of Guangdong Province,}
+\IEEEauthorblockA{Department of Computer Science and Engineering, Southern University of Science and Technology (SUSTech), Shenzhen, China}
+\IEEEauthorblockA{11510035@mail.sustech.edu.cn, hisao@sustech.edu.cn, kshang@foxmail.com}
+\thanks{This work was supported by National Natural Science Foundation of China (Grant No. 61876075), the Program for Guangdong Introducing Innovative and Enterpreneurial Teams (Grant No. 2017ZT07X386), Shenzhen Peacock Plan (Grant No. KQTD2016112514355531), the Science and Technology Innovation Committee Foundation of Shenzhen (Grant No. ZDSYS201703031748284), and the Program for University Key Laboratory of Guangdong Province (Grant No. 2017KSYS008).
+
+Corresponding Author: Hisao Ishibuchi (hisao@sustech.edu.cn)
+}
 }
 
 \maketitle
 
 \begin{abstract}
-In many real-world applications, multi-objective optimization problems can contain more than one Pareto sets. The optimization goal of multi-modal multi-objective optimization is to find all Pareto sets in the decision space. As a relatively new research area, the difficulties to solve multi-modal multi-objective optimization problem have not been carefully analyzed in literature. In this paper, we point out that traditional environmental selection, mutation and crossover mechanisms may cause problems when solving multi-modal multi-objective optimization problems. Furthermore, we creatively introduce the concept of genetic drift to explain the reduction of diversity in the decision space during the evolutionary process. In addiction, this paper also provides comparative studies of state-of-the-art algorithms using a series of computational experiments.
+In many real-world applications, multi-objective optimization problems may have more than one Pareto sets. The goal of multi-modal multi-objective optimization is to find all Pareto sets in the decision space. As a relatively new research area, difficulties in solving multi-modal multi-objective optimization problems have not been carefully analyzed in literature. In this paper, first we point out that standard multi-objective algorithms show difficulties when solving multi-modal multi-objective optimization problems. Furthermore, using the concept of genetic drift, we clearly explain the decrease of diversity in the decision space during the evolutionary process. Then, we report performance evaluation results of state-of-the-art evolutionary multi-modal multi-objective algorithms using scalable test problems.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Multi-modal multi-objective optimization, Genetic Drift, Evolutionary algorithms
+Multi-modal multi-objective optimization, genetic Drift, evolutionary algorithms
 \end{IEEEkeywords}
 
 \section{Introduction}
-\lettrine[lines=2]{M}{any} real-world optimization problems require to optimize more than one objective functions which are usually conflict with each other. In most circumstances, the fitness improvement in one objective function will cause fitness deterioration in other objectives. We generally denote this kind of problems as Multi-objective Optimization Problems(MOPs). Multi-objective Evolutionary Algorithms(MOEAs) are designed for solving MOPs. Usually, MOEAs only consider the diversity of the solution set in the objective space. Diversity in the decision space does not gain much attention. However, sometimes the diversity in the decision space is also very important, especially for multi-modal multi-objective optimization problems(MMOPs). MMOP is a special kind of MOP which has more than one Pareto optimal solution sets(PS) corresponding to the same PF. Many real-world optimization problems such as multi-objective knapsack problems \cite{jaszkiewicz2002performance} and game map generation problems \cite{togelius2010towards} have such multi-modality. An MMOP requires the optimizer to obtain a solution set that covers as more Pareto sets as possible. In engineering, some solutions are hard to implement due to physical limitations. In this case, obtaining multiple Pareto sets can help the decision maker to select alternative solutions with equivalent quality in the objective space. In addition, the knowledge about multiple Pareto optimal solution sets may be helpful to better understand the structure of the optimization problem\cite{deb2001multi}. For convenience, evolutionary algorithms designed for solving MMOPs are named as Multi-modal Multi-objective Evolutionary Algorithms or MMEAs for short.
+\lettrine[lines=2]{M}{any} real-world optimization problems require to optimize more than one objective functions which are usually conflict with each other. In many cases, the fitness improvement in one objective function will cause fitness deterioration in other objectives. This kind of problems are usually referred to as Multi-objective Optimization Problems (MOPs). Multi-objective Evolutionary Algorithms (MOEAs) are designed for solving MOPs. Usually, MOEAs only consider the diversity of a solution set in the objective space. The diversity in the decision space has not gained much attention. However, in some cases, the diversity in the decision space is also very important, especially for Multi-modal Multi-objective Optimization Problems (MMOPs). An MMOP is a special type of MOP which has more than one Pareto sets (PS) corresponding to the same PF. Many real-world optimization problems such as multi-objective knapsack problems \cite{jaszkiewicz2002performance} and game map generation problems \cite{togelius2010towards} have such multi-modality. An MMOP requires an optimizer to obtain a solution set that covers as many Pareto optimal solutions as possible. In engineering, some solutions are hard to implement due to physical limitations. In this case, obtaining multiple Pareto sets can help the decision maker to select alternative solutions with equivalent quality in the objective space. In addition, the knowledge about multiple Pareto sets may be helpful to better understand the structure of the optimization problem\cite{deb2001multi}. Evolutionary algorithms designed for solving MMOPs are named as Multi-modal Multi-objective Evolutionary Algorithms (MMEAs).
 
-As pointed out in \cite{tanabe2019review} \cite{liang2016multimodal}, MOEAs are not well-performed on MMOPs because they can only obtain a part of Pareto optimal solutions in most circumstances. In this paper, we further confirm this proposition with a series of computational experiments. In addition, we try to do some analysis and explanations on why MOEAs perform poor on MMOPs. We illustrate that in order to find solutions in all Pareto sets, an explicit mechanism to maintain the diversity in the decision space is necessary. This means that MMEAs should be able to preserve the diversity of solutions in both decision and objective space. Since 2005, MMEAs have begun to draw attention from researchers in the MOEA community. Some new algorithms are specially designed for MMOPs and some of them are modified from existing MOEAs. In this paper, several popular MMEAs are tested and their performance on the test problems with different dimensional decision spaces is examined. We also examine the effectiveness of MMEAs on solving MMOPs compared with classical MOEAs.
+As pointed out in \cite{tanabe2019review} \cite{liang2016multimodal}, standard MOEAs do not perform well on MMOPs because they can obtain only a part of multiple Pareto sets in many cases. In this paper, first we confirm this proposition through a series of computational experiments. Next, we explain why standard MOEAs do not work well on MMOPs. We illustrate that an explicit mechanism to maintain the diversity of solutions in the decision space is needed. This means that MMEAs should be able to preserve the diversity of solutions in both the decision and objective spaces. Since 2005, MMOPs have drawn attention of researchers in the MOEA community. Some new MMEAs were specially designed for MMOPs. Other MMEAs were proposed as modified versions of existing MOEAs. In this paper, several popular MMEAs are tested to examine their scalability with respect to the number of decision variables. We also compare the search ability of MMEAs to standard MOEAs.
 
-The structure of this paper is organized as follows. In section \ref{Multi-modal Multi-objective Optimization}, we give the formal definition of MMOPs, and mainstream diversity maintenance techniques in the literature and their characteristics are reviewed. Section \ref{Difficulties Analysis} is devoted to analyze the difficulties of solving MMOPs. Then a series of computational experiments are conducted in section \ref{Experimental Studies}. Finally, we conclude this paper in section \ref{Conclusion}.
+This paper is organized as follows. In section \ref{Multi-modal Multi-objective Optimization}, we give the formal definition of MMOPs. We also explain diversity maintenance techniques in existing MMEAs and their characteristics. Section \ref{Difficulties Analysis} is devoted to analyze the difficulties of solving MMOPs. Then a series of computational experiments are conducted in section \ref{Experimental Studies}. Finally, we conclude this paper in section \ref{Conclusion}.
 \section{Multi-modal Multi-objective Optimization}
 \label{Multi-modal Multi-objective Optimization}
 \subsection{Formal Definition}
@@ -64,169 +71,159 @@ MMOP is a kind of MOP that aims to find all solutions that are equivalent to Par
 \begin{definition}
 Solutions $\boldsymbol{x_1}$ and  $\boldsymbol{x_2}$ are equivalent  iff $||f(\boldsymbol{x_1}) - f(\boldsymbol{x_2})|| \leq \delta$ .
 \end{definition}
-Where $\delta$ is a positive number that represents the tolerance of similarity of solutions given by the decision maker. If $\delta = 0$, the decision maker only accepts Pareto optimal solutions, and the dominated solutions should be removed in the final population.  Larger $\delta$ means that the decision maker can accept the sub-optimal solutions that are more inferior than Pareto optimal solutions. Because it is difficult to accurately describe the relationship between the value of $\delta$ and the quality of the resulting solutions, we only consider the case of $\delta =0$ to simplify the process of analysis. 
 
-\subsection{Multi-Polygon Test Problem}
-There are several benchmark MMOPs used in the existing literature such as Omni-test \cite{deb2005omni} , SYM-PART \cite{rudolph2007capabilities} and Multi-Polygon\cite{ishibuchi2019salable} test problems etc. This paper uses Multi-Polygon test problems for analyzing the performance of MOEAs and MMEAs because it has better flexibility than other test problems. Multi-Polygon test problem is an MMOP based on the idea of distance minimization. For example, there are four identical regular hexagons with radius $r$ in Fig. \ref{fig:Multi-Polygon Problem}, and the distance $l$ between any two adjacent polygons is larger than $4r$ (Please refer to \cite{ishibuchi2019salable} for more details about the specification of $l$). With these settings, we can define a 6-objective optimization problem by:
+In \textit{Definition} 2, $\delta$ is a non-negative number that represents the tolerance of similarity of solutions given by the decision maker. If $\delta = 0$, the decision maker only accepts Pareto optimal solutions, and dominated solutions should be removed from the final solution set. A positive $\delta$ means that the decision maker can accept the sub-optimal solutions that are dominated than Pareto optimal solutions. Because it is difficult to accurately describe the relationship between the value of $\delta$ and the quality of the resulting solution set, we only consider the case of $\delta =0$ in our discussion in this paper. 
+
+\subsection{Multi-Polygon Test Problems}
+There are several benchmark MMOPs used in the existing literature such as Omni-test \cite{deb2005omni} , SYM-PART \cite{rudolph2007capabilities} and multi-polygon\cite{ishibuchi2019salable} test problems. This paper uses multi-polygon test problems for analyzing the performance of MOEAs and MMEAs. This is because they have better flexibility than other test problems. A multi-polygon test problem is an MMOP based on the idea of distance minimization. For various version of multi-polygon problems, see \cite{fieldsend2019feature}, \cite{nojima2019constrained}.
+
+As an example, let us consider four identical regular hexagons with radius $r$ in Fig. \ref{fig:Multi-Polygon Problem}. The distance $l$ between adjacent polygons should be larger than $4r$ (please refer to \cite{ishibuchi2019salable} for more details about the specification of $l$). With these settings, we can define a six-objective optimization problem as:
 
 \begin{equation*}
 \left\{
 \begin{array}{c}{f_{1}(\boldsymbol{x})=\min \left\{d\left(\boldsymbol{x}, A_{1}\right), d\left(\boldsymbol{x}, B_{1}\right), d\left(\boldsymbol{x}, C_{1}\right), d\left(\boldsymbol{x}, D_{1}\right)\right\}} \\ \dots \\ {{f_{6}}(\boldsymbol{x})=\min \left\{d\left(\boldsymbol{x}, A_{6}\right), d\left(\boldsymbol{x}, B_{6}\right), d\left(\boldsymbol{x}, C_{6}\right), d\left(\boldsymbol{x}, D_{6}\right)\right\}}\end{array}
 \right.
 \end{equation*}
-
-Where $d(\boldsymbol{a} ,\boldsymbol{b})$ is the Euclidean distance between vectors $\boldsymbol{a}$ and $\boldsymbol{b}$.  In this test problem, any point inside the four hexagons is Pareto optimal. Therefore, this test problem has four equivalent Pareto sets. Compared to other MMOPs which has fixed number of decision variables, one of the major advantages of Multi-Polygon test problem is that the dimension of its decision space can be extended by mapping the plane to a two-dimensional subspace in any dimension space.
+where $d(\boldsymbol{a} ,\boldsymbol{b})$ is the Euclidean distance between vectors $\boldsymbol{a}$ and $\boldsymbol{b}$ (i.e., between points $\boldsymbol{a}$ and $\boldsymbol{b}$). In this test problem, any point inside the four hexagons is Pareto optimal. Therefore, this test problem has four equivalent Pareto sets. Compared to other MMOPs have the fixed number of decision variables, one major advantage of multi-polygon test problem is the scalability with respect to the number of objectives, decision variables, equivalent Pareto sets and local Pareto sets\cite{ishibuchi2019salable}.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=.25\textwidth]{Section2/Problem}
-	\caption{An example of Multi-Polygon test problem.}
+	\caption{An example of multi-polygon test problem.}
 	\label{fig:Multi-Polygon Problem}
 \end{figure}
 
-\subsection{Review of State-of-the-art Techniques}
+\subsection{Review of Diversity Maintenance Techniques in MMEAs}
 \label{Review of State-of-the-art Techniques}
-In this section, we provide a short review of state-of-the-art techniques for maintaining the diversity in the decision space. As pointed out by Deb \cite{deb2001multi}, the key idea of solving MMOPs is to "divide" the entire population into several sub-populations that do not affect each other as much as possible and let each sub-population evolve independently. Here we list some commonly used approaches:
+In this section, we provide a short review of state-of-the-art techniques for maintaining the diversity of solutions in the decision space in MMEAs. As pointed out by Deb \cite{deb2001multi}, the key idea of solving MMOPs is to "divide" the entire population into several sub-populations and let each sub-population evolve independently. Here we list some commonly used approaches:
 \subsubsection{Fitness Sharing Approach}
-Fitness sharing was initially introduced in \cite{goldberg1987genetic} and widely adopted in MOEAs to keep the sparsity of the solutions in the objective space. The main idea of fitness sharing is to degrade the fitness of crowded solutions by sharing their fitness to their neighbors. In order to solve MMOPs, fitness sharing in both decision space and objective space needs to be considered simultaneously. For example, DNEA\cite{liu2018double} uses the sum of two fitness sharing functions both in the decision and objective spaces. Fitness sharing approach is hard to apply because the sharing radius is a problem dependent parameter and it needs fine tuning. In addition, combining fitness sharing in two spaces is also a challenging task.
+Fitness sharing was initially introduced in \cite{goldberg1987genetic} and widely used in MOEAs to maintain the diversity of the solutions in the objective space. The main idea of fitness sharing is to degrade the fitness of crowded solutions. In order to solve MMOPs, fitness sharing in both decision and objective spaces needs to be considered simultaneously. For example, DNEA\cite{liu2018double} uses the sum of two fitness sharing functions for the decision and objective spaces. One difficulty in the fitness sharing approach is an appropriate specification of the sharing radius in each space. In addition, combining fitness sharing in two spaces is also a challenging task.
 \subsubsection{Crowding Distance Approach}
 Crowding distance is often used as a second selection criterion in Pareto-dominance based algorithms such as NSGA-II\cite{deb2002fast}. Several MMEAs such as Omni-optimizer\cite{deb2005omni} and MO\_Ring\_PSO\_SCD\cite{yue2017multiobjective} design special types of crowding distance that take both the decision and objective spaces into account.
-\subsubsection{Restrict Environmental Selection Approach}
-Carrying the environmental selection in the whole population is harmful to the population diversity in the decision space, which will be explained in Section \ref{Difficulties Analysis}. One remedy is to restrict the environmental selection in part of the population. More specifically, a solution should only compete with its neighborhood solutions in the decision space. The neighborhood relationship may either distance based or index based. For example, in MOEA/D-AD \cite{tanabe2018decomposition}, a solution $\boldsymbol{x}$ only competes with the closest $L$ solutions in the decision space by the scalarizing function.
+\subsubsection{Restricted Environmental Selection Approach}
+Performing the environmental selection in the whole population is harmful to the population diversity in the decision space, which will be explained in Section \ref{Difficulties Analysis}. One remedy is to restrict the environmental selection in part of the population. More specifically, a solution should compete with its neighborhood solutions in the decision space. The neighborhood relationship may either distance based or index based. For example, in MOEA/D-AD \cite{tanabe2018decomposition}, a solution $\boldsymbol{x}$ only competes with the closest $L$ solutions in the decision space.
 
-\section{Difficulties of Solving MMOPs}
+\section{Difficulties in Solving MMOPs}
 \label{Difficulties Analysis}
-Although there have been a lot of researches on MMOPs, the analysis of the difficulties of solving MMOPs is still relatively rare. In this section, we analyze the difficulties of maintaining the diversity of the population in the decision space. Although most of the analysis is based on the Multi-polygon test problem, the result can be generalized to other MMOPs. 
-
-At different stages of evolution, the reasons for affecting the distribution of population in the decision space may varies. We can use the IGD\cite{zhang2008rm} value to divide the evolutionary process into different phases. Suppose that the IGD values of the population at $t$ evaluations and the final population are $V_t$ and $V_f$ respectively. We define a relative error function $\delta_e(t)$:
-$$\delta_e(t)=\frac{|V_t-V_f|}{V_f}$$
-Then we can say that the population becomes mature at $T$ evaluations iff $\forall t<T$, $\delta_e(t)>\Delta$ and $\forall t \ge T$, $\delta(t) \leq \Delta$. Where $\Delta$ is a threshold defined by user. As shown in Fig. \ref{fig: Two stages}, the evolutionary process is separated into young and mature stages using $\Delta=3\%$.
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=.35\textwidth]{Section3/Stages}
-    \caption{Two stages of evolution process.}
-    \label{fig: Two stages}
-\end{figure}
-
-In the young stage, individuals in the population are far away from the PF. In the mature stage, the whole population is very close to the PF but the distribution of the population in the decision space may change. Now we analyze the difficulties of solving MMOPs from the following three aspects:
+Although a number of studies on MMOPs have been published, difficulties in solving MMOPs are not analyzed in many studies. In this section, we analyze the difficulties of maintaining the diversity of the population in the decision space. Although our analysis is based on the multi-polygon test problems, discussion in this section can be generalized to other MMOPs. Now we analyze the difficulties in solving MMOPs from the following three aspects:
 
 \subsection{Environmental Selection}
 \label{Impact of environmental selection}
-For most MOEAs, the environmental selection acts on the whole population. This will cause two consequences.
-Firstly, in the young stage of the evolution, a relatively good solution will eliminate other dominated solutions which are far away from it in the decision space. Secondly, as pointed out in \cite{liang2016multimodal}, for MMOPs, two solutions that are very far apart in the decision space may be very close in the objective space. Then MOEAs will remove the solutions that are too crowded in the objective space, therefore equivalent (or slightly inferior) solutions will be eliminated in the mature stage. As Fig. \ref{fig: Environmental selection} shows, for both cases, the diversity in the decision space will decrease. 
+In most MOEAs, the environmental selection acts on the whole population. This usually leads to the following consequence in MMOPs.
+A relatively good solution eliminates some other dominated solutions even if they are far away in the decision space. As pointed out in \cite{liang2016multimodal}, in MMOPs, two solutions that are not close in the decision space may be very close in the objective space. Thus MOEAs remove solutions crowded in the objective space even if they are far away in the decision space. As a result, it is likely that equivalent (or slightly inferior) solutions will be eliminated. As Fig. \ref{fig: Environmental selection} shows, both a Pareto dominance-based mechanism and crowding-based mechanism decrease the diversity of solutions in the decision space. 
 
 \begin{figure}[htbp]
 	\centering
-	\begin{subfigure}[b]{.24\textwidth}
+	\begin{subfigure}[b]{.3\textwidth}
 		\includegraphics[width=\linewidth]{Section3/case1}
-		\caption{Case 1}
+		\caption{Case 1: The blue solutions are dominated by the red one.}
 	\end{subfigure}
-	\begin{subfigure}[b]{.24\textwidth}
+	
+	\begin{subfigure}[b]{.3\textwidth}
 		\includegraphics[width=\linewidth]{Section3/case2}
-		\caption{Case 2}
+		\caption{Case 2: The two solutions are equivalent in the objective space.}
 	\end{subfigure}
-	\caption{The impact of environmental selection on the diversity of the population in the decision space. In each case, only the red circle survive in the next generation.}
+	\caption{The impact of environmental selection on the diversity of the population in the decision space. In (a), the red solution can survive. In (b), one of the two solutions can survive. }
 	\label{fig: Environmental selection}
 \end{figure}
 
-
 \subsection{Genetic Drift}
-The reduction of the diversity in the decision space is also related to a concept called \textit{Genetic Drift}. Genetic drift is a phenomenon in which the frequency of alleles in a population declines due to random sampling errors \cite{muhlenbein1993predictive}. Fig. \ref{fig:Genetic drift demo} gives an example of genetic drift. At generation $t$, the population contains the same number of alleles $A$ and $a$, and we assume that only random sampling happens (no selection, mutation and crossover) from generation $t$ to $t+1$. Then the frequency of $A$ becomes larger than $a$ in generation $t+1$ due to the random sampling error. 
+The decrease in the diversity of solutions in the decision space is also related to the concept of \textit{Genetic Drift}. Genetic drift is a phenomenon in which the frequency of alleles in a population declines due to random sampling errors \cite{muhlenbein1993predictive}. Fig. \ref{fig:Genetic drift demo} gives an example of genetic drift. At generation $t$, the population contains the same number of alleles $A$ and $a$. Let us assume that only random sampling is performed (no selection, mutation and crossover) from generation $t$ to $t+1$. Then the frequency of $A$ can become larger than $a$ in generation $t+1$ due to the random sampling error. After a number of generation updates based on random sampling, allele $A$ can become extinct.
 
 \begin{figure}[htbp]
 	\centering
 	\begin{subfigure}[b]{.24\textwidth}
 		\includegraphics[width=\linewidth]{Section2/Generation_t}
-		\caption{$freq_t(A) = freq_t(a)$}
+		\caption{Generation $t$}
 	\end{subfigure}
 	\begin{subfigure}[b]{.24\textwidth}
 		\includegraphics[width=\linewidth]{Section2/Generation_t1}
-		\caption{$freq_{t+1}(A) < freq_{t+1}(a)$}
+		\caption{Generation $t+1$}
 	\end{subfigure}
 	\caption{Demonstration of genetic drift}
 	\label{fig:Genetic drift demo}
 \end{figure}
 
-When solving MMOPs, equivalent solutions can be seen as alleles because they are indistinguishable in terms of objective function values. In Fig. \ref{fig: Alleles}, the decision space of Multi-Polygon test problem is divided into four parts. Solutions in each part can be viewed as an allele.
+Genetic drift tends to reduce the genetic variation of the population during the evolutionary process. Some alleles can disappear due to genetic drift as explained in Fig. \ref{fig: Environmental selection}. Asoh\cite{asoh1994mean} mathematically proved the following when only random selection is performed: only one of alleles in the population survives (this process is called convergence) as the iteration proceeds, and the mean convergence time is proportional to the population size. 
 
-Genetic drift tends to reduce the genetic variation of the population during the evolutionary process. Some of the alleles may even disappear due to genetic drift. Asoh\cite{asoh1994mean} mathematically proved that with only random selection, only one of alleles in the population will survive (this process is called convergence) as the iteration proceeds, and the mean convergence time is proportional to the population size. 
+In Fig. \ref{fig: Alleles}, we divide the decision space of a multi-polygon problem into four parts. Since the four parts are mapped to exactly the same set in the objective space, they can be viewed as different alleles with the same fitness for simplicity of discussions. It is likely that three parts will disappear after a large number of generations.
 
-Genetic drift can affect the distribution of the population in the decision space throughout the evolution process. In general, due to the existence of genetic drift, the diversity in the decision space will reduce. In section \ref{Experimental Studies}, we use more computational experiments to study the effects of genetic drift on solving MMOPs.
+Genetic drift can affect the distribution of the population in the decision space throughout the evolution process. In general, due to the existence of genetic drift, the diversity in the decision space will reduce. In section \ref{Experimental Studies}, we use computational experiments to study the effects of genetic drift on the search behavior of standard MOEAs on MMOPs.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=.3\textwidth]{Section3/Alleles}
-    \caption{Divide the decision space of Multi-Polygon test problem into 4 parts in counterclockwise order. Each part can be viewed as an gene allele.}
+    \caption{Subdivision of the decision space of a multi-polygon problem into four parts. Each part can be viewed as an allele.}
     \label{fig: Alleles}
 \end{figure}
 
 \subsection{Crossover and Mutation}
-In evolutionary algorithms, crossover and mutation are two operations that will increase the variety of the population. These two operations can help the algorithm to avoid trapping in the local optima. However, since mutation and crossover have higher probability of producing offspring that are close to their parents, the distribution of the parent population will affect the distribution of the offspring population. More specifically, more offspring will be produced in the region where the parent population has higher density. Fig. \ref{fig: SBX crossover} demonstrates the results of generating 1,000 individuals from SBX\cite{deb1995simulated} crossover with distribution index = 20. As shown in Fig. \ref{fig: SBX crossover} (\subref{fig: SBX crossover case 1}), the diversity of solutions in the decision space does not change too much since no new solutions are generated in other polygons. In Fig. \ref{fig: SBX crossover} (\subref{fig: SBX crossover case 2}), the parents are two solutions in diagonal polygons, i.e. $(0, 0)^T$ and $(5, 5)^T$. In this case, the diversity of solutions in the decision space increases dramatically since the number of alleles in the population increases from two to four. Fig. \ref{fig: Polynomial mutation} depicts the results of polynomial mutation with distribution index = 20. The number of alleles is not changed by mutation. From these two simulation results, we can see that traditional crossover and mutation operations may not be able to effectively increase the diversity in the decision space.
+In evolutionary algorithms, crossover and mutation are two operators that increase the diversity of the population. These two operators can help the algorithm to avoid trapping in the local optima. However, mutation and crossover are also likely to produce offspring that are close to their parents. More specifically, more offspring will be produced in the region where the parent population has high density. Fig. \ref{fig: SBX crossover} demonstrates the results of generating 1,000 individuals by the SBX\cite{deb1995simulated} crossover with distribution index = 20. As shown in Fig. \ref{fig: SBX crossover} (\subref{fig: SBX crossover case 1}) with two parents at $(0, 0)^T$ and $(5, 0)^T$, the diversity of solutions in the decision space does not change too much since no new solutions are generated in other polygons. In Fig. \ref{fig: SBX crossover} (\subref{fig: SBX crossover case 2}), the parents are two solutions in diagonal polygons, i.e. $(0, 0)^T$ and $(5, 5)^T$. In this case, the diversity of solutions in the decision space increases significantly since the number of polygons with solutions increases from two to four. Fig. \ref{fig: Polynomial mutation} depicts the results of the polynomial mutation with distribution index = 20. The number of polygons with solutions is not changed by mutation. From these two simulation results, we can see that standard crossover and mutation operators cannot efficiently increase the diversity in the decision space.
 \begin{figure}[htbp]
 	\centering
 	\begin{subfigure}[b]{.24\textwidth}
 		\includegraphics[width=\linewidth]{Section3/crossover1}
-		\caption{Case 1: parents are $(0, 0)^T$ and $(5, 0)^T$. The number of alleles remains unchanged.}
+		\caption{Case 1: parents are $(0, 0)^T$ and $(5, 0)^T$.}
 		\label{fig: SBX crossover case 1}
 	\end{subfigure}
 	\begin{subfigure}[b]{.24\textwidth}
 		\includegraphics[width=\linewidth]{Section3/crossover2}
-		\caption{Case 2: parents are $(0, 0)^T$ and $(5, 5)^T$. The number of alleles changes from 2 to 4.}
+		\caption{Case 2: parents are $(0, 0)^T$ and $(5, 5)^T$.}
 		\label{fig: SBX crossover case 2}
 	\end{subfigure}
-	\caption{Generate 1,000 offspring by SBX crossover. Yellow and dark circles represent parent and offspring respectively.}
+	\caption{Generated 1,000 offspring by the SBX crossover. Yellow and dark circles represent parent and offspring, respectively.}
 	\label{fig: SBX crossover}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=.24\textwidth]{Section3/mutation}
-    \caption{Generate 1,000 offspring by applying polynomial mutation to two solutions. Yellow and dark circles represent parent and offspring respectively. The number of alleles remains unchanged.}
+    \caption{Generate 1,000 offspring by applying polynomial mutation to two solutions. Yellow and dark circles represent parent and offspring respectively.}
     \label{fig: Polynomial mutation}
 \end{figure}
-From the discussion above, we can see that extra diversity maintenance techniques are necessary when handling MMOPs.
+From the discussions above, we can see that additional diversity maintenance techniques are needed in MOEAs in their applications to MMOPs.
 
 \section{Experimental Studies}
 \label{Experimental Studies}
 \subsection{Experimental Settings}
 \label{Experimental Settings}
 \subsubsection{Algorithms for Comparison}
-In order to obtain more reliable experimental results, we select several representative MOEAs from the following three classes:
+We select representative MOEAs from the following three classes:
 \begin{itemize}
-    \item \textbf{Pareto-dominance based}: NSGA-II\cite{deb2002fast}, NSGA-III\cite{deb2013evolutionary} and SPEA2\cite{zitzler2001spea2}.
-    \item \textbf{Decomposition based}: MOEA/D \cite{zhang2007moea} with PBI($\theta=5$) and Tchebycheff aggregation function.
+    \item \textbf{Pareto-dominance based}: NSGA-II\cite{deb2002fast}, and SPEA2\cite{zitzler2001spea2}.
+    \item \textbf{Decomposition based}: MOEA/D \cite{zhang2007moea} with PBI ($\theta=5$) and Tchebycheff aggregation function and NSGA-III\cite{deb2013evolutionary}.
     \item \textbf{Indicator based}: IBEA\cite{zitzler2004indicator}.
 \end{itemize}
 
-Also, for MMEAs, we selected algorithms mentioned in section \ref{Review of State-of-the-art Techniques}: DNEA, MO\_Ring\_PSO\_SCD, MOEA/D-AD and Omni-Optimizer.
+We also used MMEAs mentioned in Subsection \ref{Review of State-of-the-art Techniques}: DNEA\cite{liu2018double}, MO\_Ring\_PSO\_SCD\cite{yue2017multiobjective}, MOEA/D-AD\cite{tanabe2018decomposition} and Omni-Optimizer\cite{deb2005omni}.
 \subsubsection{Parameter Settings}
 In our experiments, we use the following parameter settings: 
 \paragraph{Test Problem Settings}
 \begin{itemize}
-     \item Number of objectives $M=6$.
-    \item Number of decision variables $D=2, 4, 6, 8, 10, 100$.
-    \item Four regular polygons with radius $r=1$ and their centers are $\boldsymbol{c}_1=(0, 0)^T$, $\boldsymbol{c}_2=(5, 0)^T$, $\boldsymbol{c}_3=(5, 5)^T$, $\boldsymbol{c}_4=(0, 5)^T$. 
+     \item Number of objectives: $M=6$.
+    \item Number of decision variables: $D=2, 4, 6, 8, 10, 100$.
+    \item Four regular polygons with radius $r=1$ and centers $\boldsymbol{c}_1=(0, 0)^T$, $\boldsymbol{c}_2=(5, 0)^T$, $\boldsymbol{c}_3=(5, 5)^T$, $\boldsymbol{c}_4=(0, 5)^T$. 
 \end{itemize}
-\paragraph{GA Settings}
+\paragraph{Common Settings over All Algorithms:}
 \begin{itemize}
-    \item Population size $N$ = 300.
+    \item Population size: $N$ = 300.
     \item Number of evaluations = $10^5$.
-    \item SBX crossover(distribution index = 20) with probability 1.0.
-    \item Polynomial mutation(distribution index = 20) with probability $1/D$.
+    \item SBX crossover (distribution index = 20) with probability 1.0.
+    \item Polynomial mutation (distribution index = 20) with probability $1/D$.
 \end{itemize}
-\paragraph{Algorithm Settings}
-We use default parameters for each algorithm according to the corresponding papers.
+\paragraph{Specific Settings for Each Algorithm}
+We use default parameters for each algorithm according to the corresponding paper.
 \begin{itemize}
-    \item IBEA: fitness scaling factor $\kappa=0.05$.
-    \item DNEA: niche radius in the objective space $\delta_{obj}=0.06$ and niche radius in the decision space $\delta_{var}=0.02$.
-    \item MO\_Ring\_PSO\_SCD: the size of personal best archive $n_{\text{PBA}}=5$ and the size of neighborhood best archive $n_{\text{NBA}}=15$.
-    \item MOEA/D-AD: use PBI($\theta=5$) aggregation function and neighborhood size $L = \lfloor 0.1\mu \rfloor$ where $\mu$ is the size of current population.
-    \item Omni-optimizer: $\epsilon$-dominance parameter $\delta=0.001$.
+    \item IBEA. Fitness scaling factor: $\kappa=0.05$.
+    \item DNEA. Niche radius in the objective space: $\delta_{obj}=0.06$; Niche radius in the decision space $\delta_{var}=0.02$.
+    \item MO\_Ring\_PSO\_SCD. Archive size: $n_{\text{PBA}}=5$ for the personal best, $n_{\text{NBA}}=15$ for the neighborhood best.
+    \item MOEA/D-AD. Use PBI ($\theta=5$) aggregation function and neighborhood size $L = \lfloor 0.1\mu \rfloor$ where $\mu$ is the size of current population.
+    \item Omni-optimizer. $\epsilon$-dominance parameter: $\delta=0.001$.
 \end{itemize}
 
 \subsection{Experimental Results and Analysis}
 \label{Experimental Results}
-In this section, we evaluate the performance of the selected MOEAs and MMEAs on Multi-Polygon test problems with different dimensional decision spaces using PlatEMO platform\cite{tian2017platemo}. In each experiment, each algorithm runs 31 times and the run with median HV among them is reported. In addition, following the similar manner from paper \cite{ishibuchi2019salable}, we plot the 2-d projection of the obtained solutions to visualize their distribution in the decision space. Furthermore, we compare the performance of MOEAs and MMEAs in the objective space.
+In this section, we evaluate the performance of the selected MOEAs and MMEAs on multi-polygon test problems using PlatEMO platform\cite{tian2017platemo}. In each experiment, each algorithm is executed 31 times. Then a single run with the median HV among them is selected to report a representative experimental result. In a similar manner to \cite{ishibuchi2019salable}, we plot the two-dimensional projection of the obtained solutions to visualize their distribution in the decision space. We also evaluate the performance of MOEAs and MMEAs in the objective space.
 %% dim = 2 PS plot 
 \begin{figure}[htbp]
     \centering
@@ -257,7 +254,7 @@ In this section, we evaluate the performance of the selected MOEAs and MMEAs on 
     \caption{IBEA}
     \end{subfigure}
 
-    \caption{Simulation results of MOEAs on Multi-Polygon test problem with $D=2$.}
+    \caption{Simulation results of MMEAs on multi-polygon test problem with $D=2$.}
     \label{fig: MOEAs PS dim=2}
 \end{figure}
 
@@ -280,13 +277,13 @@ In this section, we evaluate the performance of the selected MOEAs and MMEAs on 
     \includegraphics[width=\linewidth]{Section5/dim2/PS/OmniOptimizer}
     \caption{Omni-optimizer}
     \end{subfigure}
-    \caption{Simulation results of MMEAs on Multi-Polygon test problem with $D=2$.}
+    \caption{Simulation results of MMEAs on multi-polygon test problem with $D=2$.}
     \label{fig: MMEAs PS dim=2}
 \end{figure}
 
-Figs. \ref{fig: MOEAs PS dim=2} and \ref{fig: MMEAs PS dim=2} show the simulation results of MOEAs and MMEAs when $D=2$. It can be seen that the performance of MOEA/D and NSGA-III is worse than other algorithms. When $D=2$, all algorithms except MOEA/D and NSGA-III can obtain a good coverage of the true Pareto sets. It is worth mentioning that, the number of solutions obtained by MOEA/D-AD is smaller than others due to the deletion mechanism.
+Figs. \ref{fig: MOEAs PS dim=2} and \ref{fig: MMEAs PS dim=2} show the simulation results of MOEAs and MMEAs when $D=2$. It is shown that the performance of MOEA/D and NSGA-III is worse than the other algorithms as MMEAs in Fig. \ref{fig: MOEAs PS dim=2}. When $D=2$, all algorithms except MOEA/D and NSGA-III can obtain a good coverage of the true Pareto sets in the decision space.
 
-As discussed in section \ref{Difficulties Analysis}, the performance of MOEAs on the MMOPs should be very poor. However, the experimental results here are inconsistent with this proposition. In order to figure out the reason, we divide the plane into four parts, and mark them as area 1\textasciitilde 4 in counterclockwise order as shown in Fig. \ref{fig: Alleles}. Then, after every 500 evaluations (denoted as epoch), the number of solutions in each area is recorded. In addition, the IGD value of each epoch is also recorded to show the evolutionary progress. 
+As discussed in section \ref{Difficulties Analysis}, MOEAs usually do not work well on MMOPs. However, the experimental results in Fig. \ref{fig: MOEAs PS dim=2} are good. In order to examine the reason, we divide the decision space into four parts, and mark them as area 1\textasciitilde 4  as shown in Fig. \ref{fig: Alleles}. Then, after every 500 evaluations, the number of solutions in each area is recorded. In addition, the IGD value is also recorded to show the evolutionary progress. 
 
 %% dim = 2 Diversity Plot
 \begin{figure}[htbp]
@@ -321,7 +318,7 @@ As discussed in section \ref{Difficulties Analysis}, the performance of MOEAs on
     \caption{IBEA}
     \end{subfigure}
 
-    \caption{Solution distribution and IGD value of MOEAs on Multi-Polygon test problem with $D=2$.}
+    \caption{The number of solutions in each area and the IGD value through the evolution by each MOEA on the multi-polygon test problem with $D=2$.}
     \label{fig: MOEAs Diversity dim=2}
 \end{figure}
 
@@ -344,15 +341,15 @@ As discussed in section \ref{Difficulties Analysis}, the performance of MOEAs on
     \includegraphics[width=\linewidth]{Section5/dim2/Diversity/OmniOptimizer}
     \caption{Omni-optimizer}
     \end{subfigure}
-    \caption{Solution distribution and IGD value of MMEAs on Multi-Polygon test problem with $D=2$.}
+    \caption{The number of solutions in each area and the IGD value through the evolution by each MMEA on the multi-polygon test problem with $D=2$.}
     \label{fig: MMEAs Diversity dim=2}
 \end{figure}
 
-Figs. \ref{fig: MOEAs Diversity dim=2} and \ref{fig: MMEAs Diversity dim=2} show the  distribution of solutions and IGD value at each epoch for MOEAs and MMEAs respectively. According to Fig, \ref{fig: MOEAs Diversity dim=2}, for MOEAs which perform good when $D=2$, the number of solutions in each area establishes a "dynamic balance". As shown in Fig. \ref{fig: SBX crossover} (\subref{fig: SBX crossover case 2}), by applying SBX crossover to two solutions in diagonal area will significantly improve the diversity in the decision space. When the number of solutions in diagonal area is very close, a dynamic balance is formed. In contrast, when the number of solutions in one area is much larger than its diagonal area, dynamic balance cannot be established and only solutions in a single polygon left. Take NSGA-III as an example, in Fig. \ref{fig: MOEAs Diversity dim=2} (\subref{fig: NSGA-III Diversity dim=2}), although the diversity of solution is good at the beginning of the mature stage, most solutions in the final population come from area 3. This is because the third area has much more solutions than others, solutions in other areas quickly disappear. This kind of figures may also help to explain the poor performance of MOEA/D. It can be seen from Figs. \ref{fig: MOEAs Diversity dim=2} (\subref{fig: MOEA/D-TCH Diversity dim=2}) and (\subref{fig: MOEA/D-PBI Diversity dim=2}) that MOEA/D focuses its search in a small area in the decision space at the young stage of evolution. We can conclude that MOEA/D lost its diversity in the decision space because of its environmental selection mechanism.
+Figs. \ref{fig: MOEAs Diversity dim=2} and \ref{fig: MMEAs Diversity dim=2} show the number of solutions in each area and the IGD value for MOEAs and MMEAs, respectively. According to Fig. \ref{fig: MOEAs Diversity dim=2}, the number of solutions in each area establishes a "dynamic balance" in the case of MOEAs which perform well on the test problem with $D=2$. As shown in Fig. \ref{fig: SBX crossover} (\subref{fig: SBX crossover case 2}), SBX crossover of two solutions in diagonal areas significantly improves the diversity of solutions in the decision space. When enough solutions exist both ares in the diagonal position (i.e., areas 1 and 3 or areas 2 and 4), a dynamic balance is formed. However, when a single area has too many solutions and its diagonal position area does not have enough solutions, a dynamic balance is not formed. For example, in the case of NSGA-III in Fig. \ref{fig: MOEAs Diversity dim=2} (\subref{fig: NSGA-III Diversity dim=2}), although the diversity of solution is good in a very early stage of evolution, most solutions in the final population are in area 3. In Fig. \ref{fig: MOEAs Diversity dim=2}, the number of solutions in area 3 starts to quickly increase around the 10, 000th function evaluations. At the same time, the number of solutions in area 1 (i.e., the diagonal position of area 3) starts to quickly decrease. During the next 10, 000 evaluations, the number of solutions in area 1 becomes almost zero. As a result, no solutions in areas 2 and 4 can be generated by recombining solutions in area 1 and 3. Therefore, the number of solutions in area 2 and 4 gradually decreases after around 20, 000th evaluations. We have similar observations in Fig. \ref{fig: MOEAs Diversity dim=2} (d) and (e) by MOEA/D. Since NSGA-III has a similar environmental selection mechanism to MOEA/D, it is likely that decomposition-based algorithms have strong convergence property to a single Pareto set.
 
-For MMEAs, the situation that one allele dominates the others never happens when $D=2$. All MMEAs can establish a dynamic balance. Diversity maintenance strategies used in MMEAs are effective in this case.
+In Fig. \ref{fig: MMEAs PS dim=2} by MMEAs, all areas have some solutions thanks to a diversity maintenance mechanism in each algorithm.
 
-Following the same manner, we examine the case when $D=4$. The 2-d projection of the final population is shown in Figs. \ref{fig: MOEAs PS dim=4} and \ref{fig: MMEAs PS dim=4}. The simulation results show that it is more difficult to cover all PSs. Most MOEAs only obtain solutions in one or two polygons. For MMEAs, MOEA/D-AD and MO\_Ring\_PSO\_SCD are still able to obtain satisfactory results but the performance of DNEA and Omni-optimizer is worse than our expectations. This shows that the adaptability of fitness sharing and crowding distance approaches is poor. 
+In the same manner, we examine the case with $D=4$ (i.e., the four-dimensional multi-polygon problem). The two-dimensional projection of the final population is shown in Figs. \ref{fig: MOEAs PS dim=4} and \ref{fig: MMEAs PS dim=4}. The simulation results show that the slight increase in the number of decision variables from the two to four makes it clearly difficult to cover all the four polygons. In Fig. \ref{fig: MMEAs PS dim=4} by MMEAs, MOEA/D-AD and MO\_Ring\_PSO\_SCD are still able to obtain satisfactory results. However, DNEA and Omni-optimizer do not work well on Fig. \ref{fig: MMEAs PS dim=4}. 
 
 %% dim = 4 PS plot 
 \begin{figure}[htbp]
@@ -384,7 +381,7 @@ Following the same manner, we examine the case when $D=4$. The 2-d projection of
     \caption{IBEA}
     \end{subfigure}
 
-    \caption{Simulation results of MOEAs on Multi-Polygon test problem with $D=4$.}
+    \caption{Simulation results of MOEAs on multi-polygon test problem with $D=4$.}
     \label{fig: MOEAs PS dim=4}
 \end{figure}
 
@@ -407,11 +404,11 @@ Following the same manner, we examine the case when $D=4$. The 2-d projection of
     \includegraphics[width=\linewidth]{Section5/dim4/PS/OmniOptimizer}
     \caption{Omni-optimizer}
     \end{subfigure}
-    \caption{Simulation results of MMEAs on Multi-Polygon test problem with $D=4$.}
+    \caption{Simulation results of MMEAs on multi-polygon test problem with $D=4$.}
     \label{fig: MMEAs PS dim=4}
 \end{figure}
 
-We also examine the distribution of solutions in the decision space during the evolution. According to Figs. \ref{fig: MOEAs Diversity dim=4} and \ref{fig: MMEAs Diversity dim=4}, we can see that when $D=4$, it is harder to establish dynamic balance than $D=2$ and the magnitude of the change of the number of solutions in each area is small. According to Fig. \ref{fig: MMEAs Diversity dim=4}, the diversity of the population in the decision space of DNEA and Omni-optimizer quickly disappears. These two MMEAs are unable to maintain the diversity of the population in the decision space when $D=4$. 
+We also examine the number of solutions in each area (areas 1 \textasciitilde 4) during the evolution. From Figs. \ref{fig: MOEAs Diversity dim=4} and \ref{fig: MMEAs Diversity dim=4}, we can see that the slight increase in the number of decision variables from two to four makes it very difficult to maintain the diversity of solutions over the four polygons. In Fig. \ref{fig: MMEAs Diversity dim=4}, the diversity of the population in the decision space of DNEA and Omni-optimizer quickly disappears. These two MMEAs are unable to maintain the diversity of solutions in the decision space when $D=4$. 
 
 %% dim = 4 Diversity Plot
 \begin{figure}[htbp]
@@ -443,7 +440,7 @@ We also examine the distribution of solutions in the decision space during the e
     \caption{IBEA}
     \end{subfigure}
 
-    \caption{Solution distribution and IGD value of MOEAs on Multi-Polygon test problem with $D=4$.}
+    \caption{The number of solutions in each area and the IGD value through the evolution by each MOEA on the multi-polygon test problem with $D=4$.}
     \label{fig: MOEAs Diversity dim=4}
 \end{figure}
 
@@ -466,11 +463,11 @@ We also examine the distribution of solutions in the decision space during the e
     \includegraphics[width=\linewidth]{Section5/dim4/Diversity/OmniOptimizer}
     \caption{Omni-optimizer}
     \end{subfigure}
-    \caption{Solution distribution and IGD value of MMEAs on Multi-Polygon test problem with $D=4$.}
+    \caption{The number of solutions in each area and the IGD value through the evolution by each MMEA on the multi-polygon test problem with $D=4$.}
     \label{fig: MMEAs Diversity dim=4}
 \end{figure}
 
-Due to the page limitation, the simulation results of MOEAs and MMEAs on Multi-Polygons test problem with higher dimensional decision space are not shown here. Instead, we show IGD and IGDX\cite{liang2016multimodal} values of each algorithm when $D=2, 4, 6, 8, 10, 100$ in Table \ref{table: IGD sumup} and \ref{table: IGDX sumup}. These two indicators measure the quality of the solution set in the objective and decision space respectively. Notice that the best values in each table are highlighted in yellow. From Table \ref{table: IGDX sumup}, it is obvious that MO\_Ring\_PSO\_SCD and MOEA/D-AD have much smaller IGDX values than others which means that the quality of the obtained solutions have better coverage in the decision space. These indicator values are consistent with our visualization results.
+Due to the page limitation, the simulation results of MOEAs and MMEAs on multi-polygons test problem with 6, 8, 10 and 100 decision variables are not shown here. Instead, we show the IGDX\cite{liang2016multimodal} and IGD values of each algorithm when $D=2, 4, 6, 8, 10, 100$ in Table \ref{table: IGDX sumup} and \ref{table: IGD sumup}, respectively. These values are calculated for the representative single run selected from the 31 runs of each algorithm on each test problem. The IGD and IGDX indicators measure the quality of the solution set in the objective and decision space, respectively. In each table, the best values in each column (i.e, for each test problem) are highlighted in yellow. In Table \ref{table: IGDX sumup}, clearly better results (i.e, clearly smaller IGDX values) are obtained by MO\_Ring\_PSO\_SCD and MOEA/D-AD than other algorithms for the test problems with $D = 4, 6, 8, 10$, this observation is consistent with our visualization results in Figs. \ref{fig: MOEAs PS dim=4} and \ref{fig: MMEAs PS dim=4}.
 
 \begin{table}[htbp]
 \centering
@@ -491,9 +488,12 @@ Omni-optimizer  & 0.16                         & 5.08                         & 
 \end{tabular}
 \label{table: IGDX sumup}
 \end{table}
- However, from the perspective of objective space, the situation is different. As shown in Table \ref{table: IGD sumup}, the IGD values of MMEAs are usually larger than MOEAs especially when $D$ is large. IBEA and SPEA2 outperform others in terms of the quality of solutions in the objective space. This observation has been reported in \cite{liang2016multimodal} and \cite{shir2009enhancing}. The reasons are mainly from two aspects. Firstly, suppose an MMOP has $K$ equivalent Pareto sets and an MMEA contains $N$ individuals. Ideally, this MMEA only uses $1/K$ of $N$ individuals to locate each Pareto set and approximate the PF, which means that this MMEA is equivalent to an MOEA with population size = $N/K$. Smaller population size usually means weaker search power. Secondly, the value of IGD indicator is also related to the number of individuals in PF approximation. For example, suppose that solutions sets $S_1$ and $S_2$ are uniformly spread along the PF. If $S_1$ contains more individuals than $S_2$, then usually $IGD(S_1) < IGD(S_2)$. 
+
+ However, in Table \ref{table: IGD sumup}, the IGD values of MMEAs are usually larger than MOEAs especially when $D$ is large. IBEA and SPEA2 outperform other algorithms in terms of the quality of solutions in the objective space. This observation has been reported in \cite{liang2016multimodal} and \cite{shir2009enhancing}. 
  
- In Table \ref{table: Perpendicular Distance}, we show the average perpendicular distances of solutions to the target plane for each algorithm. It is clear that solutions obtained by the two best MMEAs: MOEA/D-AD and MO\_Ring\_PSO\_SCD are further to the target plane than most other MOEAs. Since the average perpendicular distance is not dependent on the number of solutions to approximate the PF, we can further confirm that the search power of MMEAs is weaker than MOEAs.
+ Weaker performance of MMEAs than MOEAs in the objective space can be explained as follows. Suppose an MMOP has $K$ equivalent Pareto sets and the population size in an MMEA in $N$. Ideally, the MMEA uses $1/K$ of $N$ individuals to locate each Pareto set. This MMEA is similar to an MOEA with population size = $N/K$. Smaller population size usually means weaker search power. Another reason is that diversification mechanisms of MMEAs in the decision space do not improve the distribution of solutions in the objective space (i.e. do not improve the IGD value). On the contrary, diversification mechanisms of MOEAs focus on the distribution of solutions in the objective space, which usually improve the IGD value. 
+ 
+ In Table \ref{table: Perpendicular Distance}, we show the average perpendicular distances of solutions in the final population to the target plane for each algorithm. In the case of $D=2$, the perpendicular distance of all solutions are always zeros since all solutions are on the two-dimensional plane. The average perpendicular distance is an index of the convergence of solutions in the $D$-dimensional decision space to the hyper-plane with the polygons. It is clear from Table \ref{table: Perpendicular Distance} that  MMEAs (MOEA/D-AD and MO\_Ring\_PSO\_SCD) have weaker convergence ability than most of the other algorithms. Especially, in the case of $D=100$, these two algorithms clearly shows the weakest convergence ability among all the examined algorithms in Table \ref{table: Perpendicular Distance}. As a result, these two algorithms are also the worst in Table \ref{table: IGD sumup} with respect to IGD in the case of $D = 100$. In Table \ref{table: IGDX sumup}, all algorithms show similar performance with respect to IGDX in the case of $D=100$ (i.e., no algorithm works well on the test problem with $D=100$). The main reason for the poor performance of MOEA/D-AD and MO\_Ring\_PSO\_SCD may be weak diversification mechanisms for the other algorithms.
 
 \begin{table}[htbp]
 \centering
@@ -536,12 +536,9 @@ Omni-optimizer     & 0  & 0.22                      & 0.31                      
 \end{table}
 \section{Concluding Remarks}
 \label{Conclusion}
-This paper mainly made two contributions. Firstly, we addressed the difficulties of solving MMOPs in detail. We pointed out that the selection, mutation and crossover operations in classical MOEAs will cause problems when handling MMOPs. Furthermore, genetic drift concept was introduced to explain the the phenomenon of the diversity loss in the decision space during evolution. Our analysis may help to develop new algorithms for solving MMOPs. Secondly, a series of computational experiments were conducted to examine the performance of MOEAs and MMEAs on Multi-Polygon test problem with different dimensional decision spaces. The experimental results showed that the adaptability of DNEA and Omni-optimizer is poor. Another two MMEAs MO\_Ring\_PSO\_SCD and MOEA/D-AD can effectively preserve the diversity in the decision space compared with DNEA, Omni-optimizer and other MOEAs. We also showed that maintaining the diversity in the decision space will cause deterioration of the search power by comparing the IGD values and average perpendicular distance of MMEAs with MOEAs. 
+In this paper, we first addressed the difficulties in solving MMOPs in detail. We pointed out that the selection, mutation and crossover operators in standard MOEAs are likely to decrease the diversity of solutions in the decision space when handling MMOPs. Using the concept of genetic drift, we explained the decrease in the diversity of solutions in the decision space when MOEAs are applied to MMOPs. The experimental results showed that two MMEAs MO\_Ring\_PSO\_SCD and MOEA/D-AD have higher maintenance ability in the decision space than DNEA, Omni-optimizer and the examined MOEAs. However, our experimental results also shows that these two high-performance MMEAs have weaker convergence ability than the other examined algorithms (both MMEAs and MOEAs). These observations clearly suggest the difficulty in simultaneously realizing high convergence ability and high diversification ability.
 
-In future research, more experiments are needed to clearly show the effect of diversity maintenance mechanisms in the decision space on the search ability of an MMEA.
-
-\section*{Acknowledgment}
-This work was supported by National Natural Science Foundation of China (Grant No. 61876075), the Program for Guangdong Introducing Innovative and Entrepreneurial Teams (Grant No. 2017ZT07X386), Shenzhen Peacock Plan (Grant No. KQTD2016112514355531), the Science and Technology Innovation Committee Foundation of Shenzhen (Grant No. ZDSYS201703031748284), the Program for University Key Laboratory of Guangdong Province (Grant No. 2017KSYS008).
+Further computation experiments on various test problems are needed to examine the problem-dependency of the performance of each MMEA. In this paper, we mainly focuses on the scalability of each algorithm with respect to the number of decision variables. We need to examine other aspects of the scalability such as the number of objectives and the number of equivalent Pareto sets. Multi-polygon problems in high-dimensional decision spaces can be used to examine various aspects of the scalability. Of course, our final goal is to design a high-performance MMEA with respect to both the convergence ability and the diversification ability.
 \bibliographystyle{ieeetr}
 \bibliography{Reference.bib}
 
