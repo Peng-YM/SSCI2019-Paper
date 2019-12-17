@@ -47,12 +47,12 @@
 \begin{document}
 \title{Multi-modal Multi-objective Optimization: Problem Analysis and Case Studies
 }
-\author{\IEEEauthorblockN{Yiming Peng, Hisao Ishibuchi and Ke Shang}
+\author{\IEEEauthorblockN{Yiming Peng, Hisao Ishibuchi\IEEEauthorrefmark{1} and Ke Shang}
 \IEEEauthorblockA{Shenzhen Key Laboratory of Computational Intelligence,}
 \IEEEauthorblockA{University Key Laboratory of Evolving Intelligent Systems of Guangdong Province,}
 \IEEEauthorblockA{Department of Computer Science and Engineering, Southern University of Science and Technology (SUSTech), Shenzhen, China}
 \IEEEauthorblockA{11510035@mail.sustech.edu.cn, hisao@sustech.edu.cn, kshang@foxmail.com}
-\thanks{Corresponding Author: Hisao Ishibuchi (hisao@sustech.edu.cn)}
+\IEEEauthorblockA{\IEEEauthorrefmark{1} Corresponding Author: Hisao Ishibuchi, hisao@sustech.edu.cn}
 }
 
 \maketitle
@@ -271,7 +271,7 @@ In this section, we examine the performance of the selected MOEAs and MMEAs on m
     \caption{IBEA}
     \end{subfigure}
 
-    \caption{Simulation results of MMEAs on multi-polygon test problem with $D=2$.}
+    \caption{Simulation results of MOEAs on multi-polygon test problem with $D=2$.}
     \label{fig: MOEAs PS dim=2}
 \end{figure}
 
@@ -490,9 +490,9 @@ Due to the page limitation, the simulation results of MOEAs and MMEAs on multi-p
 \begin{tabular}{@{}ccccccc@{}}
 \toprule
 Algorithms      & D=2                          & D=4                          & D=6                          & D=8                          & D=10                         & D=100                         \\ \midrule
-NSGA-II         & 0.14                         & 2.71                         & 4.81                         & 6.67                         & 8.09                         & 28.44                         \\
+NSGA-II         & 0.14                         & 2.71                         & 4.81                         & 6.67                         & 8.09                         & \cellcolor[HTML]{F8FF00}28.44                         \\
 NSGA-III        & 1.53                         & 3.4                          & 5.2                          & 6.87                         & 8.15                         & 29.56                         \\
-SPEA2           & \cellcolor[HTML]{F8FF00}0.11 & 1.84                         & 4.74                         & 6.87                         & 7.85                         & \cellcolor[HTML]{F8FF00}28.45 \\
+SPEA2           & \cellcolor[HTML]{F8FF00}0.11 & 1.84                         & 4.74                         & 6.87                         & 7.85                         & 28.45 \\
 MOEA/D-TCH      & 1.17                         & 5.53                         & 6.91                         & 8.13                         & 9.22                          & 31.06                         \\
 MOEA/D-PBI      & 1.96                         & 4.96                         & 6.29                         & 7.32                         & 8.26                         & 29.73                         \\
 IBEA            & 0.13                         & 1.8                          & 5.03                         & 6.91                         & 7.82                         & 29.52                         \\
